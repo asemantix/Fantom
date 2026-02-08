@@ -21,7 +21,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 40px;display:fl
 @keyframes glow{0%,100%{text-shadow:0 0 20px rgba(0,229,160,0.3)}50%{text-shadow:0 0 40px rgba(0,229,160,0.6)}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
-.reveal{opacity:1;transform:translateY(0);transition:all 0.8s}.reveal.v{opacity:1;transform:translateY(0)}
+.reveal{opacity:0;transform:translateY(30px);transition:all 0.8s}.reveal.v{opacity:1;transform:translateY(0)}
 section{position:relative;z-index:1;padding:100px 40px}.sec-inner{max-width:1200px;margin:0 auto}
 .sec-label{font-family:'JetBrains Mono',monospace;font-size:0.68rem;letter-spacing:0.4em;margin-bottom:10px;text-transform:uppercase}
 .sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);font-weight:600;margin-bottom:20px;line-height:1.15}.sec-title span{color:var(--green)}.sec-title .p{color:var(--purple)}.sec-title .r{color:var(--red)}
@@ -230,7 +230,7 @@ footer{border-top:1px solid var(--bd);padding:28px 40px;text-align:center}
 <div class="recruit-card"><h4>React Native</h4><p>App mobile, bridge FFI Rust, UI/UX. 50-80K&euro;.</p></div>
 <div class="recruit-card"><h4>DevOps Multi-Cloud</h4><p>Terraform + Ansible, VPS &agrave; 3&euro;. Freelance.</p></div>
 </div>
-<div style="text-align:center;margin-top:24px"><a href="recrutement.html" class="btn-g">Voir les postes detailles</a><p style="font-size:0.65rem;color:var(--dim);margin-top:10px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8ffdeaecfdfafbeae2eae1fbcfeefceae2eee1fbe6f7a1fbeaece7">[email&#160;protected]</a> - GitHub obligatoire</p></div>
+<div style="text-align:center;margin-top:24px"><a href="recrutement.html" class="btn-g">Voir les postes detailles</a><p style="font-size:0.65rem;color:var(--dim);margin-top:10px"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="86f4e3e5f4f3f2e3ebe3e8f2c6e7f5e3ebe7e8f2effea8f2e3e5ee">[email&#160;protected]</a> - GitHub obligatoire</p></div>
 </div></section>
 
 <!-- CTA -->
@@ -242,11 +242,13 @@ footer{border-top:1px solid var(--bd);padding:28px 40px;text-align:center}
 <a href="#pricing" class="btn-g" style="font-size:0.75rem;padding:14px 36px">Devenir un fantome</a>
 </div></section>
 
-<footer><div class="foot-logo">FANTOM</div><div class="foot-links"><a href="https://asemantix.tech">AION ASEMANTIX</a><a href="#see">Visualisation</a><a href="#layers">7 couches</a><a href="#barriers">Anti-quantique</a><a href="#pricing">Tarifs</a><a href="#recruit">Recrutement</a><a href="/cdn-cgi/l/email-protection#44272b2a302527300425372129252a302d3c6a3021272c">Contact</a></div><div class="foot-slogan">HARVEST NOW, DECRYPT NEVER.</div><div class="foot-copy">&copy; 2026 AION ASEMANTIX - 8 brevets INPI - Technologie francaise</div></footer>
+<footer><div class="foot-logo">FANTOM</div><div class="foot-links"><a href="https://asemantix.tech">AION ASEMANTIX</a><a href="#see">Visualisation</a><a href="#layers">7 couches</a><a href="#barriers">Anti-quantique</a><a href="#pricing">Tarifs</a><a href="#recruit">Recrutement</a><a href="/cdn-cgi/l/email-protection#6b0804051f0a081f2b0a180e060a051f0213451f0e0803">Contact</a></div><div class="foot-slogan">HARVEST NOW, DECRYPT NEVER.</div><div class="foot-copy">&copy; 2026 AION ASEMANTIX - 8 brevets INPI - Technologie francaise</div></footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('v')})},{threshold:0.08});
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('v');obs.unobserve(x.target)}})},{threshold:0.05,rootMargin:'0px 0px 50px 0px'});
 document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+// Fallback: trigger all reveals after 2s in case observer fails
+setTimeout(function(){document.querySelectorAll('.reveal:not(.v)').forEach(function(el){el.classList.add('v')})},2000)
 
 var msgPos=new Set();
 function rB(){return Math.random()>0.5?'1':'0'}
