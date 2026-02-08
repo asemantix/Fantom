@@ -115,6 +115,11 @@ footer{border-top:1px solid var(--bd);padding:28px 40px;text-align:center}
 .foot-slogan{font-family:'JetBrains Mono',monospace;font-size:0.72rem;letter-spacing:0.2em;margin-top:8px;background:linear-gradient(135deg,var(--purple),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:600}
 .foot-copy{font-size:0.6rem;color:var(--dim);opacity:0.4;margin-top:4px}
 @media(max-width:900px){.hero-inner{grid-template-columns:1fr}.hero-viz{display:none}.layer{grid-template-columns:32px 1fr}.layer-desc{display:none}.compare-grid,.vs-grid,.analogy-grid{grid-template-columns:1fr}.barriers{grid-template-columns:1fr}.pricing-grid{grid-template-columns:1fr}nav{padding:10px 16px}.nav-r a:not(.btn-g){display:none}}
+
+/* FORCE VISIBILITY - sections appear immediately, animate if JS works */
+.reveal { animation: forceShow 0s 1.5s forwards; }
+.reveal.v { opacity: 1; transform: translateY(0); animation: none; }
+@keyframes forceShow { to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -159,7 +164,8 @@ footer{border-top:1px solid var(--bd);padding:28px 40px;text-align:center}
 <div class="compare-grid">
 <div class="compare-card classic"><div class="compare-title">&cross; SNDL contre VPN/TLS</div><div class="step"><div class="step-num">1</div><div class="step-text"><strong>Interception</strong> &mdash; capture du flux.</div></div><div class="step"><div class="step-num">2</div><div class="step-text"><strong>Identification</strong> &mdash; en-t&ecirc;tes TLS identifient les paquets. <strong style="color:var(--red)">Trivial.</strong></div></div><div class="step"><div class="step-num">3</div><div class="step-text"><strong>Stockage cibl&eacute;</strong> &mdash; ratio utile : <strong style="color:var(--red)">~100%</strong>.</div></div><div class="step"><div class="step-num">4</div><div class="step-text"><strong>Attente</strong> &mdash; 10-20 ans.</div></div><div class="step"><div class="step-num">5</div><div class="step-text"><strong>Shor</strong> &mdash; casse ECDH. Cl&eacute; de session.</div></div><div class="step"><div class="step-num">6</div><div class="step-text"><strong>Validation</strong> &mdash; structure HTTP visible. <strong style="color:var(--red)">L'adversaire sait qu'il a r&eacute;ussi.</strong></div></div><div class="step-result">&cross; DECHIFFREMENT COMPLET</div></div>
 <div class="compare-card asem"><div class="compare-title">&check; SNDL contre FANTOM</div><div class="step"><div class="step-num">1</div><div class="step-text"><strong>Interception</strong> &mdash; capture du flux.</div></div><div class="step"><div class="step-num">2</div><div class="step-text"><strong>Identification</strong> &mdash; aucune signature, taille fixe. <strong style="color:var(--green)">Impossible.</strong></div></div><div class="step"><div class="step-num">3</div><div class="step-text"><strong>Stockage aveugle</strong> &mdash; signal : <strong style="color:var(--green)">0,2%</strong>. Co&ucirc;t x500.</div></div><div class="step"><div class="step-num">4</div><div class="step-text"><strong>Attente</strong> &mdash; stocke 500x plus.</div></div><div class="step"><div class="step-num">5</div><div class="step-text"><strong>Shor</strong> &mdash; fragment au hasard. <strong style="color:var(--green)">99,8% = bruit.</strong></div></div><div class="step"><div class="step-num">6</div><div class="step-text"><strong>Validation</strong> &mdash; pas d'oracle. <strong style="color:var(--green)">Il ne sait pas s'il a r&eacute;ussi.</strong></div></div><div class="step-result">&check; RIEN. Harvest Now, Decrypt NEVER.</div></div>
-</div></div></section>
+</div></div><div style="text-align:center;padding:20px 0 40px"><a href="asemantique-vs-quantique.html" style="display:inline-block;padding:12px 28px;border:1px solid var(--purple);color:var(--purple);background:rgba(168,85,247,0.06);font-family:'JetBrains Mono',monospace;font-size:0.75rem;letter-spacing:0.12em;text-decoration:none;border-radius:6px;transition:all 0.3s;text-transform:uppercase">Voir la démonstration complète →</a></div>
+</section>
 
 <!-- 7 COUCHES -->
 <section class="layers-section" id="layers"><div class="sec-inner reveal">
@@ -245,10 +251,8 @@ footer{border-top:1px solid var(--bd);padding:28px 40px;text-align:center}
 <footer><div class="foot-logo">FANTOM</div><div class="foot-links"><a href="https://asemantix.tech">AION ASEMANTIX</a><a href="#see">Visualisation</a><a href="#layers">7 couches</a><a href="#barriers">Anti-quantique</a><a href="#pricing">Tarifs</a><a href="#recruit">Recrutement</a><a href="/cdn-cgi/l/email-protection#6b0804051f0a081f2b0a180e060a051f0213451f0e0803">Contact</a></div><div class="foot-slogan">HARVEST NOW, DECRYPT NEVER.</div><div class="foot-copy">&copy; 2026 AION ASEMANTIX - 8 brevets INPI - Technologie francaise</div></footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('v');obs.unobserve(x.target)}})},{threshold:0.05,rootMargin:'0px 0px 50px 0px'});
+var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('v')})},{threshold:0.08});
 document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
-// Fallback: trigger all reveals after 2s in case observer fails
-setTimeout(function(){document.querySelectorAll('.reveal:not(.v)').forEach(function(el){el.classList.add('v')})},2000)
 
 var msgPos=new Set();
 function rB(){return Math.random()>0.5?'1':'0'}
