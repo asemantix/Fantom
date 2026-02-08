@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asémanticité vs Quantique</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@200;300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #06070b;
+  --surface: #0e1017;
+  --surface2: #161822;
+  --border: #252838;
+  --accent: #00e5a0;
+  --accent2: #00b8ff;
+  --purple: #a855f7;
+  --purple-dim: #7c3aed;
+  --red: #ff4757;
+  --warn: #ffa726;
+  --text: #e8eaf0;
+  --dim: #8b8fa3;
+  --muted: #4a4e62;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(168,85,247,0.03) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 80%, rgba(0,229,160,0.02) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; position: relative; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 50px; }
+
+.pre-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 14px;
+  line-height: 1.15;
+}
+
+h1 .gradient {
+  background: linear-gradient(135deg, var(--purple), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  color: var(--dim);
+  font-weight: 300;
+  max-width: 750px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.subtitle em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* Tabs */
+.tabs {
+  display: flex; justify-content: center; gap: 4px;
+  margin-bottom: 40px; background: var(--surface);
+  padding: 4px; border-radius: 10px; width: fit-content;
+  margin-left: auto; margin-right: auto;
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 20px; border: none; background: transparent;
+  color: var(--dim); font-family: 'Outfit'; font-size: 13px;
+  font-weight: 500; cursor: pointer; border-radius: 8px; transition: all 0.3s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--purple); color: white; font-weight: 600; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 16px;
+}
+
+.card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* Bit stream visualization */
+.bit-stream {
+  display: flex; flex-wrap: wrap; gap: 3px;
+  padding: 20px; background: var(--bg);
+  border-radius: 10px; border: 1px solid var(--border);
+  margin: 16px 0; font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; line-height: 1;
+  max-height: 180px; overflow: hidden;
+}
+
+.bit {
+  width: 18px; height: 18px; display: flex;
+  align-items: center; justify-content: center;
+  border-radius: 3px; transition: all 0.3s;
+}
+
+.bit-noise { color: var(--muted); background: transparent; }
+.bit-msg { color: var(--bg); background: var(--purple); font-weight: 700; }
+.bit-msg-hidden { color: var(--muted); background: transparent; }
+.bit-tls { color: var(--bg); background: var(--red); font-weight: 700; }
+
+/* Comparison grid */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 800px) { .compare-grid { grid-template-columns: 1fr; } }
+
+.compare-card {
+  border-radius: 14px; padding: 24px; position: relative; overflow: hidden;
+}
+
+.compare-card.classic {
+  background: var(--surface);
+  border: 1px solid rgba(255,71,87,0.2);
+}
+.compare-card.classic::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--red), transparent);
+}
+
+.compare-card.asem {
+  background: var(--surface);
+  border: 1px solid rgba(168,85,247,0.25);
+}
+.compare-card.asem::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--purple), var(--accent));
+}
+
+.compare-title {
+  font-size: 15px; font-weight: 700; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.compare-card.classic .compare-title { color: var(--red); }
+.compare-card.asem .compare-title { color: var(--purple); }
+
+/* Steps */
+.step {
+  display: flex; gap: 12px; margin-bottom: 12px;
+  padding: 10px 14px; border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.3s;
+}
+.step:hover { border-color: var(--border); background: var(--surface2); }
+
+.step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.compare-card.classic .step-num { background: rgba(255,71,87,0.12); color: var(--red); }
+.compare-card.asem .step-num { background: rgba(168,85,247,0.12); color: var(--purple); }
+
+.step-text { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.step-text strong { color: var(--text); font-weight: 600; }
+
+.step-result {
+  padding: 12px 16px; border-radius: 8px; margin-top: 16px;
+  font-size: 13px; font-weight: 600;
+}
+.compare-card.classic .step-result {
+  background: rgba(255,71,87,0.06); border: 1px solid rgba(255,71,87,0.15); color: var(--red);
+}
+.compare-card.asem .step-result {
+  background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.15); color: var(--accent);
+}
+
+/* Barriers */
+.barriers { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+
+.barrier {
+  padding: 20px; border-radius: 12px;
+  border-left: 4px solid var(--purple);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.barrier-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+
+.barrier-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 6px;
+  background: rgba(168,85,247,0.12); color: var(--purple);
+}
+
+.barrier-title { font-size: 15px; font-weight: 600; }
+
+.barrier-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+.barrier-verdict {
+  margin-top: 10px; padding: 8px 14px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600; display: inline-block;
+}
+
+.verdict-no {
+  background: rgba(0,229,160,0.08); color: var(--accent);
+  border: 1px solid rgba(0,229,160,0.2);
+}
+
+/* Formula */
+.formula-box {
+  text-align: center; padding: 32px; margin: 30px 0;
+  background: linear-gradient(135deg, rgba(168,85,247,0.05), rgba(0,229,160,0.05));
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 14px;
+}
+
+.formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(12px, 2vw, 16px);
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, var(--purple), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+}
+
+.formula-sub { font-size: 14px; color: var(--dim); font-style: italic; }
+
+/* Analogy */
+.analogy-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin: 20px 0;
+}
+@media (max-width: 700px) { .analogy-grid { grid-template-columns: 1fr; } }
+
+.analogy-card {
+  padding: 24px; border-radius: 12px; text-align: center;
+}
+
+.analogy-card.vault {
+  background: rgba(255,71,87,0.04);
+  border: 1px solid rgba(255,71,87,0.15);
+}
+.analogy-card.sand {
+  background: rgba(168,85,247,0.04);
+  border: 1px solid rgba(168,85,247,0.15);
+}
+
+.analogy-icon { font-size: 48px; margin-bottom: 12px; }
+.analogy-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.analogy-card.vault .analogy-title { color: var(--red); }
+.analogy-card.sand .analogy-title { color: var(--purple); }
+.analogy-desc { font-size: 13px; color: var(--dim); line-height: 1.6; }
+
+/* Patent list */
+.patent-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px; margin: 16px 0;
+}
+
+.patent-item {
+  padding: 14px 16px; border-radius: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+.patent-item:hover { border-color: var(--purple-dim); }
+
+.patent-ref {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--purple); font-weight: 600;
+}
+.patent-name { font-size: 14px; font-weight: 600; margin: 4px 0; }
+.patent-desc { font-size: 11px; color: var(--dim); line-height: 1.5; }
+
+/* Insight */
+.insight {
+  padding: 24px; border-radius: 12px; margin-top: 24px;
+  background: linear-gradient(135deg, rgba(0,229,160,0.04), rgba(168,85,247,0.04));
+  border: 1px solid rgba(0,229,160,0.15);
+}
+.insight h4 { color: var(--accent); font-size: 15px; margin-bottom: 8px; }
+.insight p { font-size: 13px; color: var(--dim); line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="pre-title">Thèse technique — Portefeuille brevets</div>
+    <h1>L'asémanticité :<br><span class="gradient">l'arme contre le quantique</span></h1>
+    <p class="subtitle">La cryptographie post-quantique protège le <em>contenu</em>. L'asémanticité protège <em>l'existence même du message</em>. Un adversaire ne peut pas attaquer ce qu'il ne voit pas — même avec une puissance de calcul infinie.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('visualize')">Visualiser</button>
+    <button class="tab" onclick="switchTab('sndl')">Store Now Decrypt Later</button>
+    <button class="tab" onclick="switchTab('barriers')">Les 3 barrières</button>
+    <button class="tab" onclick="switchTab('analogy')">Analogie</button>
+    <button class="tab" onclick="switchTab('brevets')">Brevets asémantiques</button>
+  </div>
+
+  <!-- PANEL 1: VISUALIZE -->
+  <div class="panel active" id="panel-visualize">
+    <div class="compare-grid">
+      <div class="compare-card classic">
+        <div class="compare-title">✕ Flux TLS classique (chiffré mais identifiable)</div>
+        <div class="card-label" style="color:var(--red)">Ce que voit l'adversaire</div>
+        <div class="bit-stream" id="tls-stream"></div>
+        <p style="font-size:12px;color:var(--dim);margin-top:8px">
+          <span style="display:inline-block;width:12px;height:12px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:4px"></span>
+          Messages chiffrés — <strong style="color:var(--red)">identifiables</strong> (en-têtes TLS, tailles variables, structure de protocole)
+        </p>
+        <div class="step-result">
+          ✕ L'adversaire sait EXACTEMENT quels fragments stocker pour « decrypt later »
+        </div>
+      </div>
+
+      <div class="compare-card asem">
+        <div class="compare-title"><span style="animation:pulse 2s infinite">◆</span> Flux asémantique (CAMÉLÉON)</div>
+        <div class="card-label" style="color:var(--purple)">Ce que voit le même adversaire</div>
+        <div class="bit-stream" id="asem-stream"></div>
+        <p style="font-size:12px;color:var(--dim);margin-top:8px">
+          Les messages sont <strong style="color:var(--purple)">cachés dans le flux</strong> — statistiquement indistinguables du bruit. L'adversaire voit la même chose partout.
+        </p>
+        <div class="step-result">
+          ✓ L'adversaire ne sait PAS quoi stocker. Il stocke 99,8% de bruit.
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin:12px 0">
+      <button onclick="regenerateStreams()" style="padding:10px 24px;border-radius:8px;border:1px solid var(--purple);background:rgba(168,85,247,0.08);color:var(--purple);font-family:'Outfit';font-size:13px;font-weight:600;cursor:pointer">
+        ↻ Régénérer les flux
+      </button>
+      <button onclick="revealMessages()" style="padding:10px 24px;border-radius:8px;border:1px solid var(--accent);background:rgba(0,229,160,0.08);color:var(--accent);font-family:'Outfit';font-size:13px;font-weight:600;cursor:pointer;margin-left:8px">
+        👁 Révéler les messages cachés
+      </button>
+    </div>
+
+    <div class="insight">
+      <h4>→ Ce que cela signifie</h4>
+      <p>Dans le flux TLS, les messages sont visibles (en-têtes, tailles, structure). L'adversaire peut les isoler et les stocker. Dans le flux asémantique, les messages sont noyés dans le bruit. Même en cliquant « Révéler », vous voyez que les fragments-messages sont identiques au bruit — seul le destinataire légitime (qui possède la clé K) peut les distinguer grâce au marqueur polymorphe.</p>
+    </div>
+  </div>
+
+  <!-- PANEL 2: SNDL -->
+  <div class="panel" id="panel-sndl">
+    <div class="compare-grid">
+      <div class="compare-card classic">
+        <div class="compare-title">✕ SNDL contre TLS classique</div>
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Interception</strong> — L'adversaire capture le flux réseau.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Identification</strong> — Les en-têtes TLS (type 0x17, version, longueur) identifient immédiatement les paquets chiffrés. <strong style="color:var(--red)">Trivial.</strong></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Stockage ciblé</strong> — L'adversaire ne stocke que les paquets TLS identifiés. Ratio stockage utile : <strong style="color:var(--red)">~100%</strong>.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Attente</strong> — 10-20 ans. Les bandes magnétiques coûtent quelques centimes par Go.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Cassage</strong> — Shor casse l'échange ECDH. L'adversaire obtient la clé de session.</div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-text"><strong>Validation</strong> — Le plaintext a une structure HTTP/JSON attendue. <strong style="color:var(--red)">L'adversaire sait qu'il a réussi.</strong></div></div>
+        <div class="step-result">✕ Résultat : DÉCHIFFREMENT COMPLET de toute la session</div>
+      </div>
+
+      <div class="compare-card asem">
+        <div class="compare-title">✓ SNDL contre flux asémantique</div>
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Interception</strong> — L'adversaire capture le flux.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Identification</strong> — Aucun en-tête, aucune métadonnée, aucune signature. Fragments de taille fixe. <strong style="color:var(--accent)">Impossible de distinguer message/bruit.</strong></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Stockage aveugle</strong> — L'adversaire doit tout stocker. Ratio signal/bruit : <strong style="color:var(--accent)">0,2%</strong>. Coût × 500.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Attente</strong> — 10-20 ans. Mais il stocke 500x plus de données.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Cassage</strong> — Il essaie un fragment au hasard. Même avec Shor : <strong style="color:var(--accent)">99,8% de chances que ce soit du bruit.</strong></div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-text"><strong>Validation</strong> — Pas de structure attendue, pas d'oracle de validation. <strong style="color:var(--accent)">Il ne sait pas s'il a réussi.</strong></div></div>
+        <div class="step-result">✓ Résultat : RIEN D'EXPLOITABLE, même avec un quantum computer parfait</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: BARRIERS -->
+  <div class="panel" id="panel-barriers">
+    <p style="font-size:14px;color:var(--dim);margin-bottom:20px;line-height:1.7">
+      L'asémanticité érige <strong style="color:var(--text)">trois barrières successives</strong> qu'aucun ordinateur quantique ne peut franchir. Ce ne sont pas des problèmes de complexité algorithmique — ce sont des problèmes d'<strong style="color:var(--purple)">information</strong>.
+    </p>
+
+    <div class="barriers">
+      <div class="barrier">
+        <div class="barrier-header">
+          <div class="barrier-badge">B1</div>
+          <div class="barrier-title">Ce fragment est-il un message ?</div>
+        </div>
+        <div class="barrier-body">
+          Le fragment est statistiquement indistinguable du bruit aléatoire (NIST SP 800-22, r̂ ≤ 0,05). Aucun test statistique — classique ou quantique — ne peut distinguer une PRF sécurisée d'un aléa uniforme. Ce n'est pas une question de puissance de calcul : c'est un problème <strong>d'information</strong>. L'adversaire n'a littéralement pas assez de données pour décider.
+        </div>
+        <div class="barrier-verdict verdict-no">ORDINATEUR QUANTIQUE → INUTILE (problème d'information, pas de calcul)</div>
+      </div>
+
+      <div class="barrier">
+        <div class="barrier-header">
+          <div class="barrier-badge">B2</div>
+          <div class="barrier-title">Ai-je trouvé la bonne clé ?</div>
+        </div>
+        <div class="barrier-body">
+          L'algorithme de Grover accélère la recherche de clé (de 2²⁵⁶ à 2¹²⁸ opérations). Mais Grover a besoin d'un <strong>oracle de validation</strong> : une fonction qui dit « oui, c'est la bonne clé ». Dans un système classique, l'oracle est la structure du plaintext (en-tête HTTP, JSON valide, texte lisible). Dans un système asémantique, le contenu C = R(S) n'a pas de structure attendue observable. <strong>Grover tourne, mais ne sait jamais quand s'arrêter.</strong>
+        </div>
+        <div class="barrier-verdict verdict-no">GROVER → INUTILE (pas d'oracle de validation)</div>
+      </div>
+
+      <div class="barrier">
+        <div class="barrier-header">
+          <div class="barrier-badge">B3</div>
+          <div class="barrier-title">Ce fragment est-il lié à cet autre fragment ?</div>
+        </div>
+        <div class="barrier-body">
+          Le marqueur polymorphe change de configuration à chaque index j. Les positions et valeurs sont dérivées de la clé K et de l'index j. Deux fragments successifs ont des marqueurs complètement différents. La corrélation repose sur la PRF — pas sur la factorisation (Shor) ni sur le logarithme discret. <strong>Shor est hors sujet ici.</strong> Et la non-corrélabilité est formelle : Pr[A(Fⱼ, Fⱼ₊₁) = 1] ≤ negl(λ).
+        </div>
+        <div class="barrier-verdict verdict-no">SHOR → HORS SUJET (la non-corrélabilité repose sur la PRF, pas sur la factorisation)</div>
+      </div>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula">ASÉMANTICITÉ × POST-QUANTIQUE × POLYMORPHISME = INVISIBILITÉ</div>
+      <div class="formula-sub">On casse, on n'a rien. On stocke, on stocke du bruit. On corrèle, on corrèle des fantômes.</div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: ANALOGY -->
+  <div class="panel" id="panel-analogy">
+    <div class="analogy-grid">
+      <div class="analogy-card vault">
+        <div class="analogy-icon">🔐</div>
+        <div class="analogy-title">Cryptographie classique = Coffre-fort</div>
+        <div class="analogy-desc">
+          L'adversaire <strong>sait</strong> qu'il y a un coffre. Il <strong>sait</strong> qu'il contient quelque chose de valeur. Il peut concentrer toute sa puissance de calcul — classique ou quantique — sur ce coffre unique. S'il le casse, il obtient tout.
+          <br><br>
+          <strong>Le coffre est visible. Seule la serrure protège.</strong>
+        </div>
+      </div>
+
+      <div class="analogy-card sand">
+        <div class="analogy-icon">🏖️</div>
+        <div class="analogy-title">Asémanticité = Grain de sable sur une plage infinie</div>
+        <div class="analogy-desc">
+          L'adversaire voit une plage de milliards de grains de sable identiques. Il ne sait pas lequel est le « bon ». S'il en casse un au hasard, il ne sait pas s'il a trouvé quelque chose ou du sable. Et chaque grain change d'apparence à chaque marée (polymorphisme).
+          <br><br>
+          <strong>Le grain est invisible. Même une puissance infinie ne sert à rien.</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;border-color:rgba(168,85,247,0.2)">
+      <div class="card-label" style="color:var(--purple)">La combinaison — FANTOM</div>
+      <p style="font-size:14px;color:var(--dim);line-height:1.8">
+        FANTOM combine les deux : <strong style="color:var(--text)">un grain de sable qui est aussi un coffre-fort post-quantique</strong>.<br><br>
+        Même si l'adversaire trouve le bon grain (<strong style="color:var(--purple)">barrière B1</strong>), le coffre est protégé par ML-KEM/AES-256 (<strong style="color:var(--purple)">barrière B2</strong>). Même s'il casse le coffre, il ne peut pas relier ce grain au grain suivant (<strong style="color:var(--purple)">barrière B3</strong>, polymorphisme du marqueur). Et même s'il surmonte tout cela, il a dû répéter l'opération pour chaque grain individuellement.
+        <br><br>
+        <strong style="color:var(--accent)">La complexité est multiplicative, pas additive.</strong> Chaque barrière multiplie le coût de l'attaque au lieu de simplement l'augmenter.
+      </p>
+    </div>
+  </div>
+
+  <!-- PANEL 5: BREVETS -->
+  <div class="panel" id="panel-brevets">
+    <p style="font-size:14px;color:var(--dim);margin-bottom:20px;line-height:1.7">
+      L'asémanticité n'est pas un brevet unique — c'est un <strong style="color:var(--text)">paradigme qui imprègne tout le portefeuille</strong>. Voici les brevets qui en sont le véhicule direct.
+    </p>
+
+    <div class="patent-grid">
+      <div class="patent-item" style="border-left:3px solid var(--purple)">
+        <div class="patent-ref">FR2516793</div>
+        <div class="patent-name">CAMÉLÉON — La fondation</div>
+        <div class="patent-desc">Portions utiles indistinguables du bruit. Marqueur polymorphe. Filtrage en O(k) sans crypto. Validation locale. C'est le socle de toute l'asémanticité.</div>
+      </div>
+      <div class="patent-item" style="border-left:3px solid var(--purple)">
+        <div class="patent-ref">FR2600020</div>
+        <div class="patent-name">OCTOPUS — Messagerie asémantique</div>
+        <div class="patent-desc">Segmentation de messages arbitraires en portions utiles asémantiques. Le header de segmentation (4 octets) est DANS la portion utile chiffrée, invisible.</div>
+      </div>
+      <div class="patent-item" style="border-left:3px solid var(--purple)">
+        <div class="patent-ref">FR2600019</div>
+        <div class="patent-name">MAILBOX — Dead drop asémantique</div>
+        <div class="patent-desc">Boîte aux lettres où le serveur ne peut pas distinguer les messages du bruit. Filtrage local côté destinataire. Anonymat total.</div>
+      </div>
+      <div class="patent-item" style="border-left:3px solid var(--accent)">
+        <div class="patent-ref">FR2600010</div>
+        <div class="patent-name">SÉSAME — Commandes asémantiques</div>
+        <div class="patent-desc">Ordres aux dispositifs IoT/drones indistinguables du bruit. 99,8% de rejet sans crypto. Économie d'énergie critique.</div>
+      </div>
+      <div class="patent-item" style="border-left:3px solid var(--accent)">
+        <div class="patent-ref">FR2600021</div>
+        <div class="patent-name">RPAG — Communication clockless</div>
+        <div class="patent-desc">Fragments asémantiques + identifiants polymorphiques des porteuses. Même la fréquence radio change. Communications interplanétaires.</div>
+      </div>
+      <div class="patent-item" style="border-left:3px solid var(--accent2)">
+        <div class="patent-ref">FR2600240</div>
+        <div class="patent-name">PIP GHOST — Navigation asémantique</div>
+        <div class="patent-desc">Les identifiants réseau eux-mêmes sont dérivés d'un ratchet. L'observateur ne voit pas de session, pas de tunnel, pas de protocole.</div>
+      </div>
+    </div>
+
+    <div class="insight">
+      <h4>→ Le paradigme commun</h4>
+      <p>Tous ces brevets partagent le même principe fondamental : <strong style="color:var(--text)">rendre le signal indistinguable du bruit</strong>, puis donner au destinataire légitime un moyen <strong style="color:var(--text)">ultra-rapide et non cryptographique</strong> (le marqueur polymorphe) de reconnaître « son » signal dans la mer de bruit. C'est une inversion du paradigme classique : au lieu de protéger le contenu, on nie l'existence du contenu.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const msgPositions = new Set();
+
+function randomBit() { return Math.random() > 0.5 ? '1' : '0'; }
+
+function generateTLSStream() {
+  const el = document.getElementById('tls-stream');
+  el.innerHTML = '';
+  const total = 300;
+  for (let i = 0; i < total; i++) {
+    const isMsg = (i >= 20 && i < 45) || (i >= 70 && i < 110) || (i >= 150 && i < 180) || (i >= 220 && i < 260);
+    const bit = document.createElement('span');
+    bit.className = 'bit ' + (isMsg ? 'bit-tls' : 'bit-noise');
+    bit.textContent = randomBit();
+    el.appendChild(bit);
+  }
+}
+
+function generateAsemStream(reveal = false) {
+  const el = document.getElementById('asem-stream');
+  el.innerHTML = '';
+  msgPositions.clear();
+  const total = 300;
+  // Randomly place ~5 messages of ~8 bits each
+  const msgStarts = [37, 89, 134, 198, 251];
+  msgStarts.forEach(s => { for (let i = s; i < s + 8 && i < total; i++) msgPositions.add(i); });
+  
+  for (let i = 0; i < total; i++) {
+    const isMsg = msgPositions.has(i);
+    const bit = document.createElement('span');
+    bit.className = 'bit ' + (reveal && isMsg ? 'bit-msg' : (isMsg ? 'bit-msg-hidden' : 'bit-noise'));
+    bit.textContent = randomBit();
+    el.appendChild(bit);
+  }
+}
+
+function regenerateStreams() {
+  generateTLSStream();
+  generateAsemStream(false);
+}
+
+function revealMessages() {
+  generateAsemStream(true);
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+// Init
+generateTLSStream();
+generateAsemStream(false);
+</script>
+
+<style>
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+</style>
+
+</body>
+</html>
